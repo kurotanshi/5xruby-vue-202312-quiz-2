@@ -1,16 +1,29 @@
 <script setup>
-  import { ref } from "vue"; 
-  defineProps({
+  import { ref, computed, watch } from "vue"; 
+  const props = defineProps({
     currentPage:Number,
     PAGINATION_MAX: Number,
     totalPageCount: Number,
     pagerEnd: Number,
-    pagerAddAmount: Object
+    pagerAddAmount: Number
   })
+  //確認
+  watch(() => props.totalPageCount, (value) => {
 
-
-
-
+    // 分頁的位移，用來確保目前的頁碼固定出現在中間 
+    const pagerAddAmount = computed(() => {
+      const tmp =
+        totalPageCount.value <= PAGINATION_MAX
+          ? 0
+          : currentPage.value + 4 - pagerEnd.value;
+      return tmp <= 0
+        ? 0
+        : totalPageCount.value - (PAGINATION_MAX + tmp) < 0
+          ? totalPageCount.value - PAGINATION_MAX
+          : tmp;
+    });
+  })
+  
   // 換頁 (在FooterBlock)
   const setPage = page => {
     if (page < 1 || page > totalPageCount.value) {
@@ -21,7 +34,7 @@
 </script>
 
 <template>
-  <h2>fuck</h2>
+  <h2>prop test</h2>
   <h2>{{ currentPage }}</h2>
   <h2>{{ PAGINATION_MAX }}</h2>
   <h2>{{ pagerEnd }}</h2>
