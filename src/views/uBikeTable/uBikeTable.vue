@@ -51,7 +51,7 @@
     currentPage.value = 1;
   });
 
-  // 篩選後的站點資料
+  // 篩選後的站點資料 (父元件)
   const filtedUbikeStops = computed(() => {
     return uBikeStops.value.length === 0
       ? []
@@ -90,7 +90,7 @@
       : PAGINATION_MAX;
   });
 
-  // 分頁的位移，用來確保目前的頁碼固定出現在中間
+  // 分頁的位移，用來確保目前的頁碼固定出現在中間 
   const pagerAddAmount = computed(() => {
     const tmp =
       totalPageCount.value <= PAGINATION_MAX
@@ -102,31 +102,16 @@
         ? totalPageCount.value - PAGINATION_MAX
         : tmp;
   });
+  console.log(typeof(pagerAddAmount));
 
-  // 換頁
-  const setPage = page => {
-    if (page < 1 || page > totalPageCount.value) {
-      return;
-    }
-    currentPage.value = page;
-  };
-
-  // 指定排序（在ListBlock）
-  // const setSort = sortType => {
-  //   if (sortType === currentSort.value) {
-  //     isSortDesc.value = !isSortDesc.value;
-  //   } else {
-  //     currentSort.value = sortType;
-  //     isSortDesc.value = false;
+  // 換頁 (在FooterBlock)
+  // const setPage = page => {
+  //   if (page < 1 || page > totalPageCount.value) {
+  //     return;
   //   }
+  //   currentPage.value = page;
   // };
 
-  // 關鍵字 Highlight（在ListItem）
-  // const keywordsHighlight = (text, keyword) => {
-  //   if(keyword === '') return text;
-  //   const reg = new RegExp(keyword, 'gi');
-  //   return text.replace(reg, `<span style="color: red;">${keyword}</span>`);
-  // };
 
   // ============ emit ============ //
   // 接收 SearchBlock 傳上來的值
@@ -139,21 +124,22 @@
   <div class="app">
     <SearchBlock @passUpSearchText="passUpSearchText"/>
     <ListBlock :uBikeStopsAfterFiltered="filtedUbikeStops" :searchText="searchText"/>
+    <FooterBlock 
+        :currentPage="currentPage"
+        :PAGINATION_MAX="PAGINATION_MAX"
+        :totalPageCount="totalPageCount"
+        :pagerEnd="pagerEnd"
+        :pagerAddAmount="pagerAddAmount"/>
   </div>
   <!-- 頁籤 -->
-  <FooterBlock/>
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss">
   .app {
     padding: 1rem;
   }
   .pointer {
     cursor: pointer;
-  }
-  .pagination {
-    display: flex;
-    justify-content: center;
   }
   @media (max-width: 768px) {
     .sno {
