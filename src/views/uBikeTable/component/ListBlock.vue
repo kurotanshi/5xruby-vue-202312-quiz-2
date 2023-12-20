@@ -1,28 +1,24 @@
 <script setup>
-  import { ref, computed, watch } from "vue";
+  import { ref, computed } from "vue";
   import ListItem from './ListItem.vue'
 
   const props = defineProps({
-    uBikeStopsAfterFiltered: Array,
+    filtedUbikeStops: Array,
+    currentPage: Number,
+    COUNT_OF_PAGE: Number,
+    PAGINATION_MAX: Number,
     searchText: String,
   })
-  
-  // ============ 資料接收 ============ //
-  // 等待後端返回的值，有值後計算 sortedUbikeStops 屬性
-  const receivedData = ref([]);
-  watch(() => props.uBikeStopsAfterFiltered, (value) => {
-    console.log(value, '----watch');
-    receivedData.value = value;
-  })
 
-
-  // ============ 排序 ============ //
+  // ============ 變數宣告 ============ //
   // 目前的排序選項
   const currentSort = ref('sno');
-
   // 是否為降冪排序
   const isSortDesc = ref(false);
+  // 目前頁碼
+  
 
+  // ============ 排序 ============ //
   // 指定排序
   const setSort = sortType => {
     if (sortType === currentSort.value) {
@@ -32,24 +28,31 @@
       isSortDesc.value = false;
     }
   };
-
   // 排序後的站點資料
   const sortedUbikeStops = computed(() => {
-    const filtedStops = [...receivedData.value];
+    const filtedStops = [...props.filtedUbikeStops];
 
     return isSortDesc.value
       ? filtedStops.sort((a, b) => b[currentSort.value] - a[currentSort.value])
       : filtedStops.sort((a, b) => a[currentSort.value] - b[currentSort.value]);
   });
 
-  
-  
+
+  // ============ 分頁 ============ //
+  // 分頁後的站點資料
+  const slicedUbikeStops = computed(() => {
+    const start = (props.currentPage - 1) * props.COUNT_OF_PAGE;
+    const end =
+      start + props.COUNT_OF_PAGE <= sortedUbikeStops.value.length
+        ? start + props.COUNT_OF_PAGE
+        : sortedUbikeStops.value.length;
+    return sortedUbikeStops.value.slice(start, end);
+  });
+
 </script>
 
 <template>
-  <!-- {{ uBikeStopsAfterFiltered }} -->
   <table class="table table-striped">
-    <!-- {{ sortedUbikeStops[0].sno }} -->
     <thead>
       <tr>
         <th class="cursor-pointer" @click="setSort('sno')">
@@ -84,7 +87,7 @@
     <tbody>
       <!-- 替換成 slicedUbikeStops -->
       <ListItem
-          v-for="s in sortedUbikeStops" :key="s.sno"
+          v-for="s in slicedUbikeStops" :key="s.sno"
           :sno="s.sno"
           :sna="s.sna"
           :sarea="s.sarea"
