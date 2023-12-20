@@ -1,5 +1,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
+import UBikeTable from './components/uBikeTable.vue';
+import Search from './components/search.vue';
 import "bootstrap/dist/css/bootstrap.css";
 import '@fortawesome/fontawesome-free/css/all.css';
 
@@ -116,19 +118,27 @@ const setSort = sortType => {
 };
 
 // 關鍵字 Highlight
-const keywordsHighlight = (text, keyword) => {
-  if(keyword === '') return text;
-  const reg = new RegExp(keyword, 'gi');
-  return text.replace(reg, `<span style="color: red;">${keyword}</span>`);
-};
+// const keywordsHighlight = (text, keyword) => {
+//   if(keyword === '') return text;
+//   const reg = new RegExp(keyword, 'gi');
+//   return text.replace(reg, `<span style="color: red;">${keyword}</span>`);
+// };
+
+const searchTextUpdate = (text) => {
+  searchText.value = text;
+  // console.log(searchText.value);
+}
+
 </script>
 
 <template>
   <div class="app">
-    <p>
+    <!-- <p>
       站點名稱搜尋: <input class="border" type="text" v-model="searchText">
-    </p>
-
+    </p> -->
+    <Search 
+      @updateText = "searchTextUpdate"
+      />
     <table class="table table-striped">
       <thead>
         <tr>
@@ -163,14 +173,24 @@ const keywordsHighlight = (text, keyword) => {
       </thead>
       <tbody>
         <!-- 替換成 slicedUbikeStops -->
-        <tr v-for="s in slicedUbikeStops" :key="s.sno">
+        <!-- <tr v-for="s in slicedUbikeStops" :key="s.sno">
           <td>{{ s.sno }}</td>
           <td v-html="keywordsHighlight(s.sna, searchText)"></td>
           <td>{{ s.sarea }}</td>
           <td>{{ s.sbi }}</td>
           <td>{{ s.tot }}</td>
           <td>{{ (s.mday) }}</td>
-        </tr>
+        </tr> -->
+       
+        <UBikeTable 
+          v-for="s in slicedUbikeStops"
+          :searchText="searchText"
+          :sno="s.sno"
+          :sna="s.sna"
+          :sarea="s.sarea"
+          :sbi="s.sbi"
+          :tot="s.tot"
+          :mday="s.mday"/>
       </tbody>
     </table>
   </div>
