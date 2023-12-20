@@ -2,6 +2,8 @@
 import { ref, computed, watch } from 'vue';
 import "bootstrap/dist/css/bootstrap.css";
 import '@fortawesome/fontawesome-free/css/all.css';
+import pagination from './components/pagination.vue'
+import search from './components/search.vue'
 
 // 修改這份 YouBike 即時資訊表：
 // 1. 將搜尋的部分拆出來變成子元件 `uBikeTable/components/search.vue`
@@ -44,6 +46,10 @@ fetch('https://tcgbusfs.blob.core.windows.net/dotapp/youbike/v2/youbike_immediat
 watch(searchText, () => {
   currentPage.value = 1;
 });
+
+const handleSearchState = (t) => {
+  searchText.value = t;
+};
 
 // 篩選後的站點資料
 const filtedUbikeStops = computed(() => {
@@ -125,10 +131,7 @@ const keywordsHighlight = (text, keyword) => {
 
 <template>
   <div class="app">
-    <p>
-      站點名稱搜尋: <input class="border" type="text" v-model="searchText">
-    </p>
-
+    <search :internalSearchText="searchText" @setSearchState="handleSearchState"></search>
     <table class="table table-striped">
       <thead>
         <tr>
