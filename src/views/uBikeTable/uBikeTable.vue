@@ -4,21 +4,7 @@ import "bootstrap/dist/css/bootstrap.css";
 import '@fortawesome/fontawesome-free/css/all.css';
 import search from './components/search.vue'
 import uBikeTable from './components/uBikeTable.vue'
-import pagination from './components/pagination.vue'
-
-// 修改這份 YouBike 即時資訊表：
-// 1. 將搜尋的部分拆出來變成子元件 `uBikeTable/components/search.vue`
-// 2. 將表格的部分拆出來變成子元件 `uBikeTable/components/uBikeTable.vue`
-// 3. 將分頁的部分拆出來變成子元件 `uBikeTable/components/pagination.vue`
-// 4. 再將它們組合起來
-
-
-// 欄位說明:
-// https://data.taipei/dataset/detail?id=c6bc8aed-557d-41d5-bfb1-8da24f78f2fb
-// sno：站點代號、 sna：場站名稱(中文)、 tot：場站總停車格、
-// sbi：場站目前車輛數量、 sarea：場站區域(中文)、 mday：資料更新時間、
-// lat：緯度、 lng：經度、 ar：地(中文)、 sareaen：場站區域(英文)、
-// snaen：場站名稱(英文)、 aren：地址(英文)、 bemp：空位數量、 act：全站禁用狀態
+import pagination from "./components/pagination.vue";
 
 // 所有站點資料
 const uBikeStops = ref([]);
@@ -68,33 +54,13 @@ const totalPageCount = computed(() => {
   return Math.ceil(filtedUbikeStops.value.length / COUNT_OF_PAGE);
 });
 
-// 分頁的尾端
-const pagerEnd = computed(() => {
-  return totalPageCount.value <= PAGINATION_MAX
-    ? totalPageCount.value
-    : PAGINATION_MAX;
-});
-
-// 分頁的位移，用來確保目前的頁碼固定出現在中間
-const pagerAddAmount = computed(() => {
-  const tmp =
-    totalPageCount.value <= PAGINATION_MAX
-      ? 0
-      : currentPage.value + 4 - pagerEnd.value;
-  return tmp <= 0
-    ? 0
-    : totalPageCount.value - (PAGINATION_MAX + tmp) < 0
-      ? totalPageCount.value - PAGINATION_MAX
-      : tmp;
-});
-
-// 換頁
-const setPage = page => {
-  if (page < 1 || page > totalPageCount.value) {
-    return;
-  }
-  currentPage.value = page;
-};
+ // 換頁
+ const setPage = page => {
+    if (page < 1 || page > totalPageCount.value) {
+      return;
+    }
+    currentPage.value = page;
+  };
 
 </script>
 
@@ -106,31 +72,13 @@ const setPage = page => {
       :slicedUbikeStops="slicedUbikeStops"
     />
   </div>
-
   <!-- 頁籤 -->
-  <nav v-if="pagerEnd > 0">
-    <ul class="pagination">
-
-      <li @click.prevent="setPage(1)" class="page-item">
-        <a class="page-link" href>第一頁</a>
-      </li>
-      <li @click.prevent="setPage(currentPage - 1)" class="page-item">
-        <a class="page-link" href>&lt;</a>
-      </li>
-
-      <li v-for="i in pagerEnd" :class="{ active: i + pagerAddAmount === currentPage }" :key="i"
-        @click.prevent="setPage(i + pagerAddAmount)" class="page-item">
-        <a class="page-link" href>{{ i + pagerAddAmount }}</a>
-      </li>
-
-      <li @click.prevent="setPage(currentPage + 1)" class="page-item">
-        <a class="page-link" href>&gt;</a>
-      </li>
-      <li @click.prevent="setPage(totalPageCount)" class="page-item">
-        <a class="page-link" href>最末頁</a>
-      </li>
-    </ul>
-  </nav>
+  <pagination
+    :totalPageCount="totalPageCount"
+    :currentPage="currentPage"
+    :PAGINATION_MAX="PAGINATION_MAX"
+    @setCurrentPageState="setPage"
+  />
 </template>
 
 <style lang="scss" scoped>
@@ -139,10 +87,6 @@ const setPage = page => {
 }
 .pointer {
   cursor: pointer;
-}
-.pagination {
-  display: flex;
-  justify-content: center;
 }
 @media (max-width: 768px) {
   .sno {
