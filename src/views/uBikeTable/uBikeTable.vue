@@ -2,6 +2,10 @@
 import { ref, computed, watch } from 'vue';
 import "bootstrap/dist/css/bootstrap.css";
 import '@fortawesome/fontawesome-free/css/all.css';
+import searchItem from './components/search.vue';
+import uBikeTable from './components/uBikeTable.vue';
+import paginationItem from './components/pagination.vue';
+
 
 // 修改這份 YouBike 即時資訊表：
 // 1. 將搜尋的部分拆出來變成子元件 `uBikeTable/components/search.vue`
@@ -115,108 +119,57 @@ const setSort = sortType => {
   }
 };
 
-// 關鍵字 Highlight
-const keywordsHighlight = (text, keyword) => {
-  if(keyword === '') return text;
-  const reg = new RegExp(keyword, 'gi');
-  return text.replace(reg, `<span style="color: red;">${keyword}</span>`);
-};
+
 </script>
+
 
 <template>
   <div class="app">
-    <p>
-      站點名稱搜尋: <input class="border" type="text" v-model="searchText">
-    </p>
 
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th @click="setSort('sno')">
-            #
-            <span v-show="currentSort === 'sno'">
-              <i class="fa" :class="isSortDesc ? 'fa-sort-desc' : 'fa-sort-asc'" aria-hidden="true"></i>
-            </span>
-          </th>
-          <th>
-            場站名稱
-          </th>
-          <th>
-            場站區域
-          </th>
-          <th @click="setSort('sbi')" class="pointer">
-            目前可用車輛
-            <span v-show="currentSort === 'sbi'">
-              <i class="fa" :class="isSortDesc ? 'fa-sort-desc' : 'fa-sort-asc'" aria-hidden="true"></i>
-            </span>
-          </th>
-          <th @click="setSort('tot')" class="pointer">
-            總停車格
-            <span v-show="currentSort === 'tot'">
-              <i class="fa" :class="isSortDesc ? 'fa-sort-desc' : 'fa-sort-asc'" aria-hidden="true"></i>
-            </span>
-          </th>
-          <th>
-            資料更新時間
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- 替換成 slicedUbikeStops -->
-        <tr v-for="s in slicedUbikeStops" :key="s.sno">
-          <td>{{ s.sno }}</td>
-          <td v-html="keywordsHighlight(s.sna, searchText)"></td>
-          <td>{{ s.sarea }}</td>
-          <td>{{ s.sbi }}</td>
-          <td>{{ s.tot }}</td>
-          <td>{{ (s.mday) }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <searchItem v-model:pass-name="searchText"></searchItem>
+
+    <uBikeTable 
+    :currentSort="currentSort" 
+    :isSortDesc="isSortDesc" 
+    :searchText="searchText" 
+    :slicedUbikeStops="slicedUbikeStops"
+    @setSort="setSort">
+    </uBikeTable>
+
   </div>
 
   <!-- 頁籤 -->
-  <nav v-if="pagerEnd > 0">
-    <ul class="pagination">
-
-      <li @click.prevent="setPage(1)" class="page-item">
-        <a class="page-link" href>第一頁</a>
-      </li>
-      <li @click.prevent="setPage(currentPage - 1)" class="page-item">
-        <a class="page-link" href>&lt;</a>
-      </li>
-
-      <li v-for="i in pagerEnd" :class="{ active: i + pagerAddAmount === currentPage }" :key="i"
-        @click.prevent="setPage(i + pagerAddAmount)" class="page-item">
-        <a class="page-link" href>{{ i + pagerAddAmount }}</a>
-      </li>
-
-      <li @click.prevent="setPage(currentPage + 1)" class="page-item">
-        <a class="page-link" href>&gt;</a>
-      </li>
-      <li @click.prevent="setPage(totalPageCount)" class="page-item">
-        <a class="page-link" href>最末頁</a>
-      </li>
-    </ul>
-  </nav>
+  <paginationItem 
+  @setPage="setPage"
+  :pagerEnd="pagerEnd"
+  :pagerAddAmount="pagerAddAmount"
+  :currentPage="currentPage"  
+  :totalPageCount="totalPageCount"
+  ></paginationItem>
 </template>
 
 <style lang="scss" scoped>
 .app {
   padding: 1rem;
 }
+
 .pointer {
   cursor: pointer;
 }
+
 .pagination {
   display: flex;
   justify-content: center;
 }
+
 @media (max-width: 768px) {
   .sno {
-    max-width: 50px; word-wrap: break-word;
+    max-width: 50px;
+    word-wrap: break-word;
   }
-  .table td, .table th {
+
+  .table td,
+  .table th {
     padding: .5rem .25rem;
   }
 }
