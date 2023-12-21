@@ -1,5 +1,8 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
+import UBikeTable from './components/uBikeTable.vue';
+import Search from './components/search.vue';
+import Pagination from './components/pagination.vue';
 import "bootstrap/dist/css/bootstrap.css";
 import '@fortawesome/fontawesome-free/css/all.css';
 
@@ -28,11 +31,11 @@ const uBikeStops = ref([]);
 const searchText = ref('');
 // 目前頁碼
 const currentPage = ref(1);
-// 一頁幾筆資料
-const COUNT_OF_PAGE = 20;
-// 頁碼最多顯示幾頁
-const PAGINATION_MAX = 10;
 
+    // 一頁幾筆資料
+    const COUNT_OF_PAGE = 20;
+    // 頁碼最多顯示幾頁
+    const PAGINATION_MAX = 10;
 
 fetch('https://tcgbusfs.blob.core.windows.net/dotapp/youbike/v2/youbike_immediate.json')
   .then(res => res.text())
@@ -78,18 +81,25 @@ const totalPageCount = computed(() => {
 });
 
 // 分頁的尾端
-const pagerEnd = computed(() => {
+const pageEnd = computed(() => {
   return totalPageCount.value <= PAGINATION_MAX
     ? totalPageCount.value
     : PAGINATION_MAX;
 });
+  // 換頁
+  const setPage = page => {
+  if (page < 1 || page > totalPageCount.value) {
+      return;
+  }
+  currentPage.value = page;
+  };
 
 // 分頁的位移，用來確保目前的頁碼固定出現在中間
-const pagerAddAmount = computed(() => {
+const pageAddAmount = computed(() => {
   const tmp =
     totalPageCount.value <= PAGINATION_MAX
       ? 0
-      : currentPage.value + 4 - pagerEnd.value;
+      : currentPage.value + 4 - pageEnd.value;
   return tmp <= 0
     ? 0
     : totalPageCount.value - (PAGINATION_MAX + tmp) < 0
@@ -97,13 +107,7 @@ const pagerAddAmount = computed(() => {
       : tmp;
 });
 
-// 換頁
-const setPage = page => {
-  if (page < 1 || page > totalPageCount.value) {
-    return;
-  }
-  currentPage.value = page;
-};
+
 
 // 指定排序
 const setSort = sortType => {
@@ -115,20 +119,19 @@ const setSort = sortType => {
   }
 };
 
-// 關鍵字 Highlight
-const keywordsHighlight = (text, keyword) => {
-  if(keyword === '') return text;
-  const reg = new RegExp(keyword, 'gi');
-  return text.replace(reg, `<span style="color: red;">${keyword}</span>`);
-};
+
+const searchTextUpdate = (text) => {
+  searchText.value = text;
+  // console.log(searchText.value);
+}
+
 </script>
 
 <template>
   <div class="app">
-    <p>
-      站點名稱搜尋: <input class="border" type="text" v-model="searchText">
-    </p>
-
+    <Search 
+      @updateText = "searchTextUpdate"
+      />
     <table class="table table-striped">
       <thead>
         <tr>
@@ -163,42 +166,27 @@ const keywordsHighlight = (text, keyword) => {
       </thead>
       <tbody>
         <!-- 替換成 slicedUbikeStops -->
-        <tr v-for="s in slicedUbikeStops" :key="s.sno">
-          <td>{{ s.sno }}</td>
-          <td v-html="keywordsHighlight(s.sna, searchText)"></td>
-          <td>{{ s.sarea }}</td>
-          <td>{{ s.sbi }}</td>
-          <td>{{ s.tot }}</td>
-          <td>{{ (s.mday) }}</td>
-        </tr>
+        <UBikeTable 
+          v-for="s in slicedUbikeStops"
+          :searchText="searchText"
+          :sno="s.sno"
+          :sna="s.sna"
+          :sarea="s.sarea"
+          :sbi="s.sbi"
+          :tot="s.tot"
+          :mday="s.mday"/>
       </tbody>
     </table>
   </div>
-
   <!-- 頁籤 -->
-  <nav v-if="pagerEnd > 0">
-    <ul class="pagination">
-
-      <li @click.prevent="setPage(1)" class="page-item">
-        <a class="page-link" href>第一頁</a>
-      </li>
-      <li @click.prevent="setPage(currentPage - 1)" class="page-item">
-        <a class="page-link" href>&lt;</a>
-      </li>
-
-      <li v-for="i in pagerEnd" :class="{ active: i + pagerAddAmount === currentPage }" :key="i"
-        @click.prevent="setPage(i + pagerAddAmount)" class="page-item">
-        <a class="page-link" href>{{ i + pagerAddAmount }}</a>
-      </li>
-
-      <li @click.prevent="setPage(currentPage + 1)" class="page-item">
-        <a class="page-link" href>&gt;</a>
-      </li>
-      <li @click.prevent="setPage(totalPageCount)" class="page-item">
-        <a class="page-link" href>最末頁</a>
-      </li>
-    </ul>
-  </nav>
+  <Pagination 
+    :totalPageCount="totalPageCount"
+    :pageEnd="pageEnd"
+    :pageAddAmount="pageAddAmount"
+    :currentPage="currentPage"
+    :setPage="setPage"
+  />
+  <!-- <Pagination /> -->
 </template>
 
 <style lang="scss" scoped>
