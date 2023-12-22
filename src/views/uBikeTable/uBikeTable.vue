@@ -61,11 +61,22 @@
     }
     currentPage.value = value;
   }
+
+
+  // ============ props 傳遞 function ============ //
+  const receive = (value) => {
+    searchText.value = value
+  }
 </script>
 
 <template>
   <div class="app">
-    <SearchBlock @passUpSearchText="passUpSearchText"/>
+    <!-- emit 傳遞方式 -->
+    <!-- <SearchBlock @passUpSearchText="passUpSearchText"/> -->
+
+    <!-- props 傳遞 function 方式 -->
+    <SearchBlock :receive="receive"/>
+
     <ListBlock 
         :filtedUbikeStops="filtedUbikeStops"
         :currentPage="currentPage"
