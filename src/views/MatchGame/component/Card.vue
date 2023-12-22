@@ -1,51 +1,13 @@
 <script setup>
-    import { ref } from 'vue';
+    import { defineProps, defineEmits } from 'vue';
 
     const props = defineProps({
         cards: Array,
         openedCards: Array,
         clearedCards: Array,
+        cheatMode: Boolean,
     });
-    
-    props.clearedCards.push(100)
-    // ============ 變數宣告 ============ //
-    const compareCards = ref([]);	//卡片比較區
-    console.log('props.cards.value', props.cards);
-
-    console.log('props.clearedCards', props.clearedCards);
-    // ============ 點擊事件 ============ //
-    const clickHandler = (idx, n) => {
-        
-
-        props.openedCards.push(idx)
-        compareCards.value.push(n)
-
-        if (compareCards.value[1] != null) {
-            if (compareCards.value[0] == compareCards.value[1]) {
-                //比對正確 goes here
-                compareCards.value = [];
-                props.clearedCards = [...props.openedCards];
-
-                if (props.clearedCards.length === props.cards.length) {
-                    console.log("finished~~~~~~~");
-                    window.setTimeout(() => {
-                        const result = window.confirm('好樣的！恭喜破關，再來一局？');
-                        if (result) {
-                            gameInit();
-                        }
-                    }, 1000);
-                }
-            } else {
-                //比對失敗 goes here
-                window.setTimeout(() => {
-                    props.openedCards.splice(-2);
-                }, 1000);
-                compareCards.value = [];
-            }
-            // props.clearedCards.push(...props.openedCards);
-        }
-    }
-
+    const emits = defineEmits(['clickCard'])
 </script>
 
 
@@ -56,15 +18,17 @@
             'open': openedCards.includes(idx),
             'transition ease-in-out opacity-0 delay-1000': clearedCards.includes(idx)
         }" 
-        @click="clickHandler(idx, n)">
-        idx:{{ idx }} n:{{ n }}
+        @click="$emit('clickCard',{idx, n})">
+        
         <div class="flip-card-inner" v-if="cards[idx] > 0">
             <div class="flip-card-front"></div>
             <div class="flip-card-back">
                 <img :src="`./img/cat-0${n}.jpg`" alt="">
             </div>
         </div>
+
+        <p :class="cheatMode? 'block': 'hidden'" >idx:{{ idx }}, n:{{ n }}</p>
     </div>
 </template>
-
+<!-- @click="clickHandler(idx, n)"  -->
 <style scoped src="../MatchGame.css"></style>
